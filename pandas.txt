@@ -1,0 +1,217 @@
+# Pandas
+
+# Basics/Misc
+df['colname'] or df.colname # select col
+df['newcolname'] = ufo.City + ', '  + ufo.State # new col
+df.head() # first 5 rows
+df.tail() # last 5 rows
+df.describe() # important stats for each col
+df['colname'].describe() # important stats for a particular col
+df.dtypes # dtype for each col
+df.columns # get columns
+df.shape
+df.info(memory_usage='deep')
+df.sample(n=3)
+df.sample(frac=0.75)
+
+axis 0 is moving along ROW
+axis 1 is moving along COL
+df.mean(axis=0) # gives mean of each col
+df.mean(axis=1) # gives mean for each row
+
+Dataframe = table
+df = pd.Dataframe(x) # convert x to dataframe
+Series = col
+series = pd.Series(<python_list>) # convert list to series
+
+shift_tab in parathesis to get method signature
+
+
+# How to read data
+Reading tabular data file into pandas
+pd.read_table(<path/url>, sep='|', header=None, names = ["quantity", "name"]) # names is cols
+Only diff between read_csv and read_table => read_csv uses sep=',', read_table uses sep='\t'
+df = pd.read_csv("xx.csv", usecols=["a", "b"], nrows=5) # only read cols a and b, and first 5 rows
+
+
+# How to change column names 
+cols = <list of new col names>
+df.columns = cols # change the column names
+df.columns = df.columns.str.replace(' ', '_') # remove whitespace in column names
+
+
+# How to remove columns from dataframe
+df.drop("colname", axis=1, inplace=True) # drop a col
+df.drop(["col1", "col2"], axis=1, inplace=True) # drop multiple cols
+df.drop([0, 1], axis=0, inplace=True) # drop multiple rows (0 and 1)
+
+
+# How to sort dataframe/series
+df = df.sort_values("colname") # sort df based on colname
+df = df.sort_values(["col1", "col2"]) # sort df by col1 first, then col2
+df["colname"] = df["colname"].sort_values(ascending=True) # sort col in df
+
+
+# How to filter rows of df by col value
+df = df[df["colname"] > 20] # note df["colname"] > 20 => pd.Series of bools
+df = df[(df["col1"] > 20) & (df["col2"] < 5)]
+df = df[(df["col1"] > 20) | (df["col2"] < 5)]
+df = df[df["genre"].isin(["action", "comedy", "drama"])]
+
+
+# How to iterate through series or dataframe
+Can iterate series like python list.
+for index, row in df.iterrows():
+	print(index, row['col1'], row['col2'])
+
+
+# How to use string methods in pandas
+df['colname'] = df['colname'].str.upper() # convert strings in column 'colname' to uppercase
+df = df[df['colname'].str.contains("substring")]
+df['colname'] = df['colname'].str.replace("[", "").str.replace("]", "")  
+
+
+# Change dtype of series
+"object" is str
+df['colname'] = df['colname'].astype(float)
+Changing type to category can save memory space
+
+# Groupby
+Useful when analyzing series by categories.
+df.groupby('Continent').mean() # will do for each numeric col
+df.groupby('Continent').mean().plot(kind='bar')
+df.groupby('Continent')['beer_servings'].mean()
+df.groupby('Continent')['beer_servings'].agg(['count', 'min', 'max', 'mean'])
+
+
+# Explore series
+df['colname'].describe() # important stats for a particular col
+df['colname'].value_counts() # count for each category
+df['colname'].value_counts(dropna=False) # if want to see value counts as well
+df['colname'].value_counts(normalize=True)
+df['colname'].unique()
+df['colname'].nunique()
+pd.crosstab(df['col1'], df['col2'])
+blahblah.plot(kind="<type>")
+
+
+# Handle missing values in pandas
+df.isnull() # return dataframe with same shape and True/False for each position whether it is null
+df.notnull() # opposite of isnull()
+df.isnull().sum(axis=0) # number of nulls per column
+note that pd.Series([True, False, True]).sum() == 2
+df.dropna(how='any') # drop row if any col is null
+df.dropna(how='all') # drop row if all cols are null
+df.dropna(subset=['col1', 'col2'], how='any') # drop row if any col1 or col2 is null
+df.dropna(subset=['col1', 'col2'], how='all') # drops row if both col2 and col2 are null
+df['colname'] = df['colname'].fillna(value="new_value")
+
+
+# Find and remove duplicate rows
+df['col1'].duplicated(keep='first') # keep default is 'first', can be 'last' or False
+df['col1'].duplicated().sum()
+df.duplicated()
+df = df.drop_duplicates()
+df = df.drop_duplicates(subset=['age', 'zip_code'])
+
+
+# Pandas index
+index also known as row labels.
+All dataframes have index and columns.
+index and columns technically not part of df, so not included in df.shape.
+df.loc[row_num, 'colname']
+df.set_index('country', inplace=True)
+df.loc['Brazil', 'wine_servings'] # By changing the index, we can access data more easily.
+drinks.index.name = None # remove index name
+# How to reset back?
+drinks.index.name = 'country'
+drinks.reset_index(inplace=True)
+
+
+# Concept of alignment with index
+series_1 * series_2
+pandas knows to multiply which rows of series_1 with which rows in series_2 based on same index.
+pd.concat([df/series, df/series], axis=1)
+
+
+# loc iloc (Explicit and flexible. prefer this)
+loc is for selecting rows and cols by labels
+: is INCLUSIVE BOTH ENDS!!! different from python slice
+df.loc[0, :] # first row
+df.loc[0:2, :] # first 3 rows 
+df.loc[:, 'Country'] # df['Country']
+df.loc[:, ['Country', 'State']]
+df.loc[0:2, 'Country':'State']
+df.loc[df['colname']==2, 'Country']
+
+iloc is for selecting rows and cols with position
+: is EXCLUSIVE ON RIGHT END!!! same as python slice
+df.iloc[:, 0:4]
+
+
+# Train Test Split
+train = df.samples(frac=0.8, random_state=99)
+test = df.loc[~df.index.isin(train.index, :]
+
+
+# Convert to dummies
+df = pd.get_dummies(df, columns=['col1', 'col2'], drop_first=True)
+
+
+# Avoid SettingWithCopyWarning
+pandas doesn't know if it is a view or copy. Modify copy => bad.
+Hence, when we slice and store or copy a df, do this:
+x = y.loc[y['col1']>10, :].copy()
+
+
+# Change display options
+pd.set_option('display.max_rows', None)
+pd.reset_option('display.max_rows')
+pd.set_option('display.max_cols', None)
+pd.reset_option('display.max_cols')
+pd.set_option('display.max_colwidth', 1000)
+pd.set_option('display.precision', 2) # show 2 d.p only.
+pd.reset_option('all')
+
+
+# Create DataFrame from another object
+## Using dictionary => colname = key, value(list) = column
+pd.DataFrame({'id':[100,101,102], 'color':['red','blue','red']}, columns=['id', 'color']) # specify columns if order impt
+## Using list of lists
+pd.DataFrame([[100,101,102], ['red','blue','red']], columns=['id', 'color'])
+## Using np array
+arr = np.random.rand(4,2)
+pd.DataFrame(arr, columns=['one', 'two'])
+## Generating large DataFrame as toy data
+pd.DataFrame({'id':np.arange(100, 100, 1), 'test':np.random.randint(60, 101, 1)}, columns=['id', 'color'])
+
+
+# map 
+df['col1'] = df['col1'].map({'female':0, 'male':1})
+# apply (either to each element in a series, or to each row/col in df)
+df['col'] = df['col'].apply(len) # series
+df['col'] = df['col'].str.split(',').apply(lambda x:x[0], position=0)
+df.apply(max, axis=0) # find max in each col
+df.apply(max, axis=1) # find max in each row
+
+# applymap
+Similar to apply, but affects every element in df
+df = df.applymap(float)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
